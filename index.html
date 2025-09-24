@@ -1,0 +1,125 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aukrug Wind</title>
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+<div style="display: flex; width: 100vw; height: 100vh;  justify-content: center; align-items: center;">
+  <div>
+    <h1>Geschwindigkeit: <span id="speed">--</span> km/h</h1>
+    <h1>Max: <span id="speed_max">--</span> km/h</h1>
+    <h1>Min: <span id="speed_min">--</span> km/h</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <h1>Richtung: <span id="direction">--</span>°</h1>
+      <img id="direction_arrow" width="50px" height="50px" src="assets/arrow_down.png" alt="direction_arrow">
+    </div>
+    <div>
+      <h1>Wind relativ zu Startbahn:</h1>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <h3>Piste 29: <span id="runway_29">--</span>°</h3>
+        <div style="border-bottom: 1px solid black;">
+          <img id="direction_arrow29" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <h3>Piste 11: <span id="runway_11">--</span>°</h3>
+        <div style="border-bottom: 1px solid black;">
+          <img id="direction_arrow11" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
+        </div>
+      </div>
+    </div>
+    <h3>Datenstand: <span id="last_fetch">--</span></h3>
+  </div>
+</div>
+
+<script>
+  let windData = undefined;
+
+  const getWind = async () => {
+    try {
+      const response = await fetch("http://api.pioupiou.fr/v1/live/1624");
+      const json = await response.json();
+      return json.data.measurements;
+    } catch (error) {
+      console.error("Error fetching wind data:", error);
+      return null;
+    }
+  }
+
+  const getTimeAgo = (timestamp) => {
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diffMs = now - then;
+
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) {
+      return `vor ${diffSec} Sekunden`;
+    }
+
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) {
+      return `vor ${diffMin} Minuten`;
+    }
+  };
+
+  const calculateWindRelativeToRunway = (windHeading, runwayHeading) => {
+    let diff = windHeading - runwayHeading;
+
+    // Normalisiere auf -180° … +180°
+    diff = ((diff + 180) % 360) - 180;
+
+    return diff; // positiv = von rechts, negativ = von links
+  };
+
+  const calculateWind = async () => {
+    windData = await getWind();
+
+    if (windData) {
+      console.log(windData) //keep for debugging
+      const speedElement = document.getElementById("speed");
+      const speedMaxElement = document.getElementById("speed_max");
+      const speedMinElement = document.getElementById("speed_min");
+      const directionElement = document.getElementById("direction");
+      const directionArrowElement = document.getElementById("direction_arrow");
+      const runway29Element = document.getElementById("runway_29");
+      const runway11Element = document.getElementById("runway_11");
+      const directionArrowElement29 = document.getElementById("direction_arrow29");
+      const directionArrowElement11 = document.getElementById("direction_arrow11");
+      speedElement.innerText = windData.wind_speed_avg.toLocaleString();
+      speedMaxElement.innerText = windData.wind_speed_max.toLocaleString();
+      speedMinElement.innerText = windData.wind_speed_min.toLocaleString();
+      directionElement.innerText = windData.wind_heading;
+      directionArrowElement.style = `transform: rotate(${windData.wind_heading}deg);`;
+      const offset29 = calculateWindRelativeToRunway(windData.wind_heading, 288);
+      const offset11 = calculateWindRelativeToRunway(windData.wind_heading, 108); //source segelflug-aukrug.de
+      runway29Element.innerText = offset29;
+      runway11Element.innerText = offset11;
+      directionArrowElement29.style = `transform: rotate(${offset29}deg);`;
+      directionArrowElement11.style = `transform: rotate(${offset11}deg);`;
+
+    }
+
+  }
+
+  const calculateDateDiff = () => {
+    if (windData) {
+      const lastFetchElement = document.getElementById("last_fetch");
+      lastFetchElement.innerText = getTimeAgo(windData.date);
+    }
+  }
+
+  //initial calls
+  calculateWind();
+  calculateDateDiff()
+  //scheduling
+  setInterval(calculateWind, 1000 * 30);
+  setInterval(calculateDateDiff, 1000 * 5)
+</script>
+</body>
+</html>
