@@ -70,11 +70,10 @@
 
   const calculateWindRelativeToRunway = (windHeading, runwayHeading) => {
     let diff = windHeading - runwayHeading;
-
-    // Normalisiere auf -180° … +180°
+    //normalize
     diff = ((diff + 180) % 360) - 180;
 
-    return diff; // positiv = von rechts, negativ = von links
+    return diff;
   };
 
   const calculateWind = async () => {
