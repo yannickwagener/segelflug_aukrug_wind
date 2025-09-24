@@ -43,7 +43,7 @@
 
   const getWind = async () => {
     try {
-      const response = await fetch("http://api.pioupiou.fr/v1/live/1624");
+      const response = await fetch("https://api.pioupiou.fr/v1/live/1624");
       const json = await response.json();
       return json.data.measurements;
     } catch (error) {
