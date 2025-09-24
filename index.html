@@ -10,31 +10,34 @@
 </head>
 
 <body>
-<div style="display: flex; width: 100vw; height: 100vh;  justify-content: center; align-items: center;">
-  <div>
-    <h1>Geschwindigkeit: <span id="speed">--</span> km/h</h1>
-    <h1>Max: <span id="speed_max">--</span> km/h</h1>
-    <h1>Min: <span id="speed_min">--</span> km/h</h1>
-    <div style="display: flex; justify-content: space-between; align-items: center">
+<div style="display: flex;width: 100vw; height: 100vh; justify-content: center; align-items: center;">
+  <div style="width: 800px">
+    <div style="padding: 10px">
       <h1>Richtung: <span id="direction">--</span>°</h1>
-      <img id="direction_arrow" width="50px" height="50px" src="assets/arrow_down.png" alt="direction_arrow">
-    </div>
-    <div>
-      <h1>Wind relativ zu Startbahn:</h1>
-      <div style="display: flex; justify-content: space-between; align-items: center">
-        <h3>Piste 29: <span id="runway_29">--</span>°</h3>
-        <div style="border-bottom: 1px solid black;">
-          <img id="direction_arrow29" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
+      <div>
+        <h1>Relativ zu Piste:</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2>Piste 29: <span id="runway_29">--</span>°</h2>
+          <div style="border-bottom: 1px solid black;">
+            <img id="direction_arrow29" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2>Piste 11: <span id="runway_11">--</span>°</h2>
+          <div style="border-bottom: 1px solid black;">
+            <img id="direction_arrow11" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
+          </div>
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center">
-        <h3>Piste 11: <span id="runway_11">--</span>°</h3>
-        <div style="border-bottom: 1px solid black;">
-          <img id="direction_arrow11" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
-        </div>
-      </div>
+      <h3>Letzte Aktualisierung: <span id="last_fetch">--</span></h3>
     </div>
-    <h3>Datenstand: <span id="last_fetch">--</span></h3>
+    <div
+      class="owm-widget"
+      data-id="WB1624"
+      data-show-live="yes"
+      data-show-2h="yes"
+      data-show-24h="no"
+    ></div>
   </div>
 </div>
 
@@ -81,20 +84,12 @@
 
     if (windData) {
       console.log(windData) //keep for debugging
-      const speedElement = document.getElementById("speed");
-      const speedMaxElement = document.getElementById("speed_max");
-      const speedMinElement = document.getElementById("speed_min");
       const directionElement = document.getElementById("direction");
-      const directionArrowElement = document.getElementById("direction_arrow");
       const runway29Element = document.getElementById("runway_29");
       const runway11Element = document.getElementById("runway_11");
       const directionArrowElement29 = document.getElementById("direction_arrow29");
       const directionArrowElement11 = document.getElementById("direction_arrow11");
-      speedElement.innerText = windData.wind_speed_avg.toLocaleString();
-      speedMaxElement.innerText = windData.wind_speed_max.toLocaleString();
-      speedMinElement.innerText = windData.wind_speed_min.toLocaleString();
       directionElement.innerText = windData.wind_heading;
-      directionArrowElement.style = `transform: rotate(${windData.wind_heading}deg);`;
       const offset29 = calculateWindRelativeToRunway(windData.wind_heading, 288);
       const offset11 = calculateWindRelativeToRunway(windData.wind_heading, 108); //source segelflug-aukrug.de
       runway29Element.innerText = offset29;
@@ -120,5 +115,6 @@
   setInterval(calculateWind, 1000 * 60);
   setInterval(calculateDateDiff, 1000 * 5)
 </script>
+<script src="https://www.openwindmap.org/js/widget-v1.js"></script>
 </body>
 </html>
