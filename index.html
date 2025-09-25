@@ -97,8 +97,15 @@
   };
 
   const calculateRelativeWindComponent = (windHeading, windSpeed, runwayHeading) => {
-    const value = Math.cos(windHeading - runwayHeading) * windSpeed
-    return Math.round(value * 1);
+    const rad = deg => deg * (Math.PI / 180);
+
+    let diff = windHeading - runwayHeading;
+    //normalize
+    diff = ((diff % 360) + 360) % 360;
+    if (diff > 180) diff -= 360;
+
+    const value = Math.cos(rad(diff)) * windSpeed;
+    return Math.round(value);
   }
 
   const calculateWind = async () => {
