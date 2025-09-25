@@ -14,18 +14,21 @@
   <div style="width: 800px">
     <div style="padding: 10px">
       <div style="display: flex; align-items: center; justify-content: space-between">
-        <h1>Wind: <span id="direction">--</span></h1>
-        <img id="direction_arrow" width="50px" height="50px" src="assets/arrow_down.png" alt="direction_arrow">
+        <h1 style="flex: 1;">Wind: <span id="direction">--</span></h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex: 1;">
+          <h3>Min/Max: <span id="minmax">--</span></h3>
+          <img id="direction_arrow" width="60px" height="60px" src="assets/arrow_down.png" alt="direction_arrow">
+        </div>
       </div>
       <div>
         <div style="display: flex; justify-content: space-between; align-items: center">
-          <h2>Piste 29: <span id="runway_29">--</span>°</h2>
+          <h2 id="label_29">Piste 29: <span id="runway_29">--</span></h2>
           <div style="border-bottom: 1px solid black;">
             <img id="direction_arrow29" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
           </div>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center">
-          <h2>Piste 11: <span id="runway_11">--</span>°</h2>
+          <h2 id="label_11">Piste 11: <span id="runway_11">--</span></h2>
           <div style="border-bottom: 1px solid black;">
             <img id="direction_arrow11" width="40px" height="40px" src="assets/arrow_down.png" alt="direction_arrow">
           </div>
@@ -76,11 +79,19 @@
 
   const calculateWindRelativeToRunway = (windHeading, runwayHeading) => {
     let diff = windHeading - runwayHeading;
-    //normalize
-    diff = ((diff + 180) % 360) - 180;
+    // normalize
+    let result = ((diff % 360) + 360) % 360;
+    if (result > 180) {
+      result -= 360;
+    }
 
-    return diff;
+    return result;
   };
+
+  const calculateRelativeWindComponent = (windHeading, windSpeed, runwayHeading) => {
+    const value = Math.cos(windHeading - runwayHeading) * windSpeed
+    return Math.round(value * 1);
+  }
 
   const calculateWind = async () => {
     windData = await getWind();
@@ -91,7 +102,10 @@
 
       const fetchTimeElement = document.getElementById("last_fetch");
       const directionElement = document.getElementById("direction");
+      const minmaxElement = document.getElementById("minmax")
       const runway29Element = document.getElementById("runway_29");
+      const label29Element = document.getElementById("label_29");
+      const label11Element = document.getElementById("label_11");
       const runway11Element = document.getElementById("runway_11");
       const directionArrowElement = document.getElementById("direction_arrow");
       const directionArrowElement29 = document.getElementById("direction_arrow29");
@@ -100,11 +114,17 @@
       fetchTimeElement.innerText = refreshTime.toLocaleString();
       const windHeadingString = String(Math.round(windData.wind_heading)).padStart(3, "0");
       const windSpeedAvgString = Math.round(windData.wind_speed_avg);
-      directionElement.innerText = `${windHeadingString} | ${windSpeedAvgString} km/h`;
+      directionElement.innerText = `${windHeadingString}° | ${windSpeedAvgString} km/h`;
+      const windMinMaxString = `${Math.round(windData.wind_speed_min)} / ${Math.round(windData.wind_speed_max)} km/h`;
+      minmaxElement.innerText = windMinMaxString;
       const offset29 = calculateWindRelativeToRunway(windData.wind_heading, 288);
       const offset11 = calculateWindRelativeToRunway(windData.wind_heading, 108); //source segelflug-aukrug.de
-      runway29Element.innerText = offset29;
-      runway11Element.innerText = offset11;
+      const relativeWindComp29 = calculateRelativeWindComponent(windData.wind_heading, windData.wind_speed_avg, 288);
+      const relativeWindComp11 = calculateRelativeWindComponent(windData.wind_heading, windData.wind_speed_avg, 108);
+      runway29Element.innerText = `${offset29}° | ${relativeWindComp29} km/h`;
+      runway11Element.innerText = `${offset11}° | ${relativeWindComp11} km/h`;
+      label29Element.style = relativeWindComp29 >= 0 ? "color: black;" : "color: red;"
+      label11Element.style = relativeWindComp11 >= 0 ? "color: black;" : "color: red;"
       directionArrowElement.style = `transform: rotate(${windData.wind_heading}deg);`;
       directionArrowElement29.style = `transform: rotate(${offset29}deg);`;
       directionArrowElement11.style = `transform: rotate(${offset11}deg);`;
@@ -122,7 +142,7 @@
   }
 
   const onVisibilityChange = () => {
-    if (!document.hidden){
+    if (!document.hidden) {
       calculateWind().then(calculateDateDiff);
     }
   }
