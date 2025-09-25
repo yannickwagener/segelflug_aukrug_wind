@@ -9,6 +9,12 @@
   <meta name="theme-color" content="#fafafa">
 </head>
 
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+</style>
+
 <body>
 <div style="display: flex;width: 100%; height: 100%; justify-content: center; align-items: center;">
   <div style="width: 800px">
@@ -43,7 +49,7 @@
       data-show-24h="no"
     ></div>
     <h4>Aufnahmezeitpunkt: <span id="snapshot_timestamp">--</span></h4>
-    <h4>Letzte Aktualisierung: <span id="last_fetch">--</span></h4>
+    <h4>Aktualisierung: <span id="last_fetch">--</span></h4>
   </div>
 </div>
 
@@ -114,15 +120,15 @@
       fetchTimeElement.innerText = refreshTime.toLocaleString();
       const windHeadingString = String(Math.round(windData.wind_heading)).padStart(3, "0");
       const windSpeedAvgString = Math.round(windData.wind_speed_avg);
-      directionElement.innerText = `${windHeadingString}° | ${windSpeedAvgString} km/h`;
+      directionElement.innerText = `${windHeadingString} | ${windSpeedAvgString} km/h`;
       const windMinMaxString = `${Math.round(windData.wind_speed_min)} / ${Math.round(windData.wind_speed_max)} km/h`;
       minmaxElement.innerText = windMinMaxString;
       const offset29 = calculateWindRelativeToRunway(windData.wind_heading, 288);
       const offset11 = calculateWindRelativeToRunway(windData.wind_heading, 108); //source segelflug-aukrug.de
       const relativeWindComp29 = calculateRelativeWindComponent(windData.wind_heading, windData.wind_speed_avg, 288);
       const relativeWindComp11 = calculateRelativeWindComponent(windData.wind_heading, windData.wind_speed_avg, 108);
-      runway29Element.innerText = `${offset29}° | ${relativeWindComp29} km/h`;
-      runway11Element.innerText = `${offset11}° | ${relativeWindComp11} km/h`;
+      runway29Element.innerText = `${offset29} | ${relativeWindComp29} km/h`;
+      runway11Element.innerText = `${offset11} | ${relativeWindComp11} km/h`;
       label29Element.style = relativeWindComp29 >= 0 ? "color: black;" : "color: red;"
       label11Element.style = relativeWindComp11 >= 0 ? "color: black;" : "color: red;"
       directionArrowElement.style = `transform: rotate(${windData.wind_heading}deg);`;
