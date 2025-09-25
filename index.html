@@ -13,9 +13,11 @@
 <div style="display: flex;width: 100%; height: 100%; justify-content: center; align-items: center;">
   <div style="width: 800px">
     <div style="padding: 10px">
-      <h1>Richtung: <span id="direction">--</span>°</h1>
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h1>Wind: <span id="direction">--</span></h1>
+        <img id="direction_arrow" width="50px" height="50px" src="assets/arrow_down.png" alt="direction_arrow">
+      </div>
       <div>
-        <h1>Relativ zu Piste:</h1>
         <div style="display: flex; justify-content: space-between; align-items: center">
           <h2>Piste 29: <span id="runway_29">--</span>°</h2>
           <div style="border-bottom: 1px solid black;">
@@ -29,15 +31,16 @@
           </div>
         </div>
       </div>
-      <h3>Letzte Aktualisierung: <span id="last_fetch">--</span></h3>
     </div>
     <div
       class="owm-widget"
       data-id="WB1624"
-      data-show-live="yes"
+      data-show-live="no"
       data-show-2h="yes"
       data-show-24h="no"
     ></div>
+    <h4>Aufnahmezeitpunkt: <span id="snapshot_timestamp">--</span></h4>
+    <h4>Letzte Aktualisierung: <span id="last_fetch">--</span></h4>
   </div>
 </div>
 
@@ -84,16 +87,25 @@
 
     if (windData) {
       console.log(windData) //keep for debugging
+      const refreshTime = new Date();
+
+      const fetchTimeElement = document.getElementById("last_fetch");
       const directionElement = document.getElementById("direction");
       const runway29Element = document.getElementById("runway_29");
       const runway11Element = document.getElementById("runway_11");
+      const directionArrowElement = document.getElementById("direction_arrow");
       const directionArrowElement29 = document.getElementById("direction_arrow29");
       const directionArrowElement11 = document.getElementById("direction_arrow11");
-      directionElement.innerText = windData.wind_heading;
+
+      fetchTimeElement.innerText = refreshTime.toLocaleString();
+      const windHeadingString = String(Math.round(windData.wind_heading)).padStart(3, "0");
+      const windSpeedAvgString = Math.round(windData.wind_speed_avg);
+      directionElement.innerText = `${windHeadingString} | ${windSpeedAvgString} km/h`;
       const offset29 = calculateWindRelativeToRunway(windData.wind_heading, 288);
       const offset11 = calculateWindRelativeToRunway(windData.wind_heading, 108); //source segelflug-aukrug.de
       runway29Element.innerText = offset29;
       runway11Element.innerText = offset11;
+      directionArrowElement.style = `transform: rotate(${windData.wind_heading}deg);`;
       directionArrowElement29.style = `transform: rotate(${offset29}deg);`;
       directionArrowElement11.style = `transform: rotate(${offset11}deg);`;
 
@@ -103,17 +115,26 @@
 
   const calculateDateDiff = () => {
     if (windData) {
-      const lastFetchElement = document.getElementById("last_fetch");
-      lastFetchElement.innerText = getTimeAgo(windData.date);
+      const snapshot_element = document.getElementById("snapshot_timestamp");
+      const date = new Date(windData.date);
+      snapshot_element.innerText = `${getTimeAgo(date)} (${date.toLocaleString()})`;
     }
   }
 
+  const onVisibilityChange = () => {
+    if (!document.hidden){
+      calculateWind().then(calculateDateDiff);
+    }
+  }
+
+
   //initial calls
-  calculateWind();
-  calculateDateDiff()
+  calculateWind().then(calculateDateDiff);
   //scheduling
   setInterval(calculateWind, 1000 * 60);
-  setInterval(calculateDateDiff, 1000 * 5)
+  setInterval(calculateDateDiff, 1000 * 5);
+  //event handler registration
+  document.addEventListener("visibilitychange", onVisibilityChange)
 </script>
 <script src="https://www.openwindmap.org/js/widget-v1.js"></script>
 </body>
