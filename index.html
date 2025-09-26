@@ -13,6 +13,9 @@
   body {
     font-family: Arial, Helvetica, sans-serif;
   }
+  span {
+    white-space: nowrap;
+  }
 </style>
 
 <body>
@@ -20,9 +23,9 @@
   <div style="width: 800px">
     <div style="padding: 10px">
       <div style="display: flex; align-items: center; justify-content: space-between">
-        <h1 style="flex: 1;">Wind: <span id="direction">--</span></h1>
+        <h1 style="flex: 1;">Wind: <wbr><span id="direction">--</span></h1>
         <div style="display: flex; justify-content: space-between; align-items: center; flex: 1;">
-          <h3>Min/Max: <span id="minmax">--</span></h3>
+          <h3>Min/Max: <wbr><span id="minmax">--</span></h3>
           <img id="direction_arrow" width="60px" height="60px" src="assets/arrow_down.png" alt="direction_arrow">
         </div>
       </div>
@@ -49,8 +52,8 @@
       data-show-24h="no"
     ></div>
     <div style="padding: 10px;">
-      <h4>Aufnahmezeitpunkt: <span id="snapshot_timestamp">--</span></h4>
-      <h4>Aktualisierung: <span id="last_fetch">--</span></h4>
+      <h4>Aufnahmezeitpunkt: <wbr><span id="snapshot_timestamp">--</span></h4>
+      <h4>Aktualisierung: <wbr><span id="last_fetch">--</span></h4>
     </div>
   </div>
 </div>
@@ -130,8 +133,7 @@
       const windHeadingString = String(Math.round(windData.wind_heading)).padStart(3, "0");
       const windSpeedAvgString = Math.round(windData.wind_speed_avg);
       directionElement.innerText = `${windHeadingString} | ${windSpeedAvgString} km/h`;
-      const windMinMaxString = `${Math.round(windData.wind_speed_min)} / ${Math.round(windData.wind_speed_max)} km/h`;
-      minmaxElement.innerText = windMinMaxString;
+      minmaxElement.innerText = `${Math.round(windData.wind_speed_min)} / ${Math.round(windData.wind_speed_max)} km/h`;
       const offset29 = calculateWindRelativeToRunway(windData.wind_heading, 288);
       const offset11 = calculateWindRelativeToRunway(windData.wind_heading, 108); //source segelflug-aukrug.de
       const relativeWindComp29 = calculateRelativeWindComponent(windData.wind_heading, windData.wind_speed_avg, 288);
